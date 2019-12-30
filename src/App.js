@@ -1,26 +1,59 @@
-import React from 'react';
-import logo from './logo.svg';
+import React,{Component} from 'react';
+import axios from 'axios';
+import {encode} from 'url-safe-base64';
 import './App.css';
+import {AppBar,Typography,Toolbar} from '@material-ui/core';
+import ImageUploader from './ImageUploader';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends Component {
+
+  constructor(props) {
+    super(props)
+    this.state = {
+      original: null,
+      originalb64safe:"",
+      result:null
+    }
+  }
+
+  handleImageUpload(file) {
+    var reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onloadend = () => {
+      this.setState({
+        original:file,
+        originalb64safe:encode(reader.result.split(',')[1].slice(0,-2))
+      })
+      axios.post('http://127.0.0.1:5000/gen',{"image_b64":this.state.originalb64safe}).then(
+      res => {
+        this.setState({result:res.data});
+      }
+    ).catch(err => {console.error(err)})
+    }
+  }
+
+  render() {
+    return (
+      <div>
+        <AppBar color="primary" position="static">
+          <Toolbar>
+            <Typography variant="title" color="inherit">
+              Colorful
+            </Typography>
+          </Toolbar>
+        </AppBar>
+
+        <ImageUploader onChange={this.handleImageUpload.bind(this)}></ImageUploader>
+        {
+          !this.state.result?
+          
+            <h3>Expecting image</h3>
+          :
+            <img src={"data:image/png;base64,"+this.state.result} alt=""/>
+        }
+      </div>
+    )
+  }
 }
 
 export default App;
