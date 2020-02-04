@@ -24,7 +24,10 @@ class App extends Component {
         original:file,
         originalb64safe:encode(reader.result.split(',')[1].slice(0,-2))
       })
-      axios.post('http://127.0.0.1:5000/gen',{"image_b64":this.state.originalb64safe}).then(
+      console.log(process.env.REACT_APP_API)
+      axios.post(process.env.REACT_APP_API,{
+        
+        "image_b64":this.state.originalb64safe}).then(
       res => {
         this.setState({result:res.data});
       }
