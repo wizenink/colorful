@@ -1,0 +1,13 @@
+@startuml sequence
+actor Usuario
+participant App
+participant DropzoneArea
+database backend
+
+Usuario -> DropzoneArea : introducir imagen
+DropzoneArea --> App : handleImage
+App -> backend : request {imagebase64:string}
+backend -> backend : procesado
+backend --> App : result {result:string}
+App -> Usuario : muestra imagen
+@enduml

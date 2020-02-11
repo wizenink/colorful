@@ -1,0 +1,29 @@
+@startuml test
+skinparam nodesep 100
+skinparam ranksep 100
+note top of App : Todos los componentes extienden las clase "Component" en react 
+class App << (C,blue) component >> {
+    ==state==
+    #original: file
+    #originalb64: string
+    #result:string
+    ==methods==
+    + handleImageUpload(file)
+    ==render==
+    #img
+    
+}
+
+class DropzoneArea << (C,blue) component >> {
+    ==props==
+    +onDrop()
+    #acceptedFiles:array
+    #filesLimit:number 
+}
+
+
+App o-- DropzoneArea
+DropzoneArea "\n\nonDrop" <.. "handleImageUpload" App
+
+
+@enduml
