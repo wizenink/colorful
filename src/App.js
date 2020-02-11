@@ -30,7 +30,7 @@ class App extends Component {
     var responses = []
     this.state.originalb64safe.forEach(element => {
       console.log(element)
-      axios.post('http://127.0.0.1:5050/gen', { "image_b64": element }).then(
+      axios.post('process.env.REACT_APP_API', { "image_b64": element }).then(
         res => {
           this.setState(prevState => ({
             result: [...prevState.result, res.data],
@@ -48,11 +48,15 @@ class App extends Component {
         original: file,
         originalb64safe: encode(reader.result.split(',')[1].replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''))
       })
-      axios.post('http://127.0.0.1:5000/gen', { "image_b64": this.state.originalb64safe }).then(
-        res => {
-          this.setState({ result: res.data });
-        }
-      ).catch(err => { console.error(err) })
+      console.log(process.env.REACT_APP_API)
+      axios.post(process.env.REACT_APP_API,{
+        
+        "image_b64":this.state.originalb64safe}).then(
+
+      res => {
+        this.setState({result:res.data});
+      }
+    ).catch(err => {console.error(err)})
     }
   }
 
