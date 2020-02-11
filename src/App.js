@@ -2,8 +2,21 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import { encode } from 'url-safe-base64';
 import './App.css';
-import { AppBar, Typography, Toolbar } from '@material-ui/core';
+import { AppBar, Typography, Toolbar,Button,Container} from '@material-ui/core';
 import ImageUploader from './ImageUploader';
+import ModelSelector from './ModelSelector';
+
+
+
+var endpoint = ""
+if(process.env.REACT_APP_API === undefined)
+{
+  endpoint = "127.0.0.1:5050"
+}
+else
+{
+  endpoint = process.env.REACT_APP_API
+}
 
 class App extends Component {
 
@@ -12,8 +25,18 @@ class App extends Component {
     this.state = {
       original: [],
       originalb64safe: [],
-      result: []
+      result: [],
+      models: []
     }
+  }
+
+  componentDidMount()
+  {
+    axios.get("http://"+endpoint+"/list").then(
+      res => {
+        this.setState({models:res.data})
+      }
+    ).catch(err => console.log(err))
   }
   handleImageAdd(file) {
     var reader = new FileReader()
@@ -27,10 +50,8 @@ class App extends Component {
   }
 
   makeRequests() {
-    var responses = []
     this.state.originalb64safe.forEach(element => {
-      console.log(element)
-      axios.post('process.env.REACT_APP_API', { "image_b64": element }).then(
+      axios.post("http://"+endpoint+"/gen", { "image_b64": element }).then(
         res => {
           this.setState(prevState => ({
             result: [...prevState.result, res.data],
@@ -60,29 +81,44 @@ class App extends Component {
     }
   }
 
+  swapModel(model) {
+    axios.post("http://"+endpoint+"/model/"+model.target.value).then(
+      res => {
+        console.log("RES")
+        console.log(res)
+        console.log(res.data)}
+    ).catch(err => 
+      {
+        console.log("ERROR")
+        console.log(err)
+      })
+  }
+
   render() {
     return (
       <div>
         <AppBar color="primary" position="static">
           <Toolbar>
-            <Typography variant="title" color="inherit">
+            <Typography variant="h5" color="inherit">
               Colorful
             </Typography>
+            <ModelSelector models={this.state.models} onChange={this.swapModel}></ModelSelector>
           </Toolbar>
         </AppBar>
 
         
         <ImageUploader onChange={this.handleImageAdd.bind(this)}></ImageUploader>
         <hr></hr>
-        <button onClick={this.makeRequests.bind(this)}>
-          Activate Lasers
-        </button>
-
+      
+        <Button variant="contained" color="primary" disabled={(this.state.originalb64safe.length===0)} onClick={this.makeRequests.bind(this)}>Colorize</Button>
+       
+        <Container>
         {this.state.result.map(image => {
           return (<img src={"data:image/png;base64," + image} alt="" />
           )
         })
         }
+        </Container>
       </div>
     )
   }
