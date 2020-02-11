@@ -1,8 +1,8 @@
-import React,{Component} from 'react';
+import React, { Component } from 'react';
 import axios from 'axios';
-import {encode} from 'url-safe-base64';
+import { encode } from 'url-safe-base64';
 import './App.css';
-import {AppBar,Typography,Toolbar} from '@material-ui/core';
+import { AppBar, Typography, Toolbar } from '@material-ui/core';
 import ImageUploader from './ImageUploader';
 
 class App extends Component {
@@ -10,25 +10,49 @@ class App extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      original: null,
-      originalb64safe:"",
-      result:null
+      original: [],
+      originalb64safe: [],
+      result: []
+    }
+  }
+  handleImageAdd(file) {
+    var reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onloadend = () => {
+      this.setState(prevState => ({
+        original: [...prevState.original, file],
+        originalb64safe: [...prevState.originalb64safe, encode(reader.result.split(',')[1].replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''))]
+      }))
     }
   }
 
+  makeRequests() {
+    var responses = []
+    this.state.originalb64safe.forEach(element => {
+      console.log(element)
+      axios.post('http://127.0.0.1:5050/gen', { "image_b64": element }).then(
+        res => {
+          this.setState(prevState => ({
+            result: [...prevState.result, res.data],
+          }))
+        }
+      ).catch(err => { console.error(err) })
+    });
+  }
   handleImageUpload(file) {
     var reader = new FileReader()
     reader.readAsDataURL(file)
     reader.onloadend = () => {
+      console.log(reader.result)
       this.setState({
-        original:file,
-        originalb64safe:encode(reader.result.split(',')[1].slice(0,-2))
+        original: file,
+        originalb64safe: encode(reader.result.split(',')[1].replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''))
       })
-      axios.post('http://127.0.0.1:5001/gen',{"image_b64":this.state.originalb64safe}).then(
-      res => {
-        this.setState({result:res.data});
-      }
-    ).catch(err => {console.error(err)})
+      axios.post('http://127.0.0.1:5000/gen', { "image_b64": this.state.originalb64safe }).then(
+        res => {
+          this.setState({ result: res.data });
+        }
+      ).catch(err => { console.error(err) })
     }
   }
 
@@ -43,13 +67,17 @@ class App extends Component {
           </Toolbar>
         </AppBar>
 
-        <ImageUploader onChange={this.handleImageUpload.bind(this)}></ImageUploader>
-        {
-          !this.state.result?
-          
-            <h3>Expecting image</h3>
-          :
-            <img src={"data:image/png;base64,"+this.state.result} alt=""/>
+        
+        <ImageUploader onChange={this.handleImageAdd.bind(this)}></ImageUploader>
+        <hr></hr>
+        <button onClick={this.makeRequests.bind(this)}>
+          Activate Lasers
+        </button>
+
+        {this.state.result.map(image => {
+          return (<img src={"data:image/png;base64," + image} alt="" />
+          )
+        })
         }
       </div>
     )
