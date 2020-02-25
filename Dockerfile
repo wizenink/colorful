@@ -3,7 +3,7 @@ FROM node:13.8-alpine
 WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 COPY package.json /app/package.json
-COPY packagelock.json /app/package-lock.json
+COPY package-lock.json /app/package-lock.json
 RUN npm install 
 RUN npm install react-scripts@3.0.1 -g --silent
 COPY . /app
