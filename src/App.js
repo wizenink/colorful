@@ -135,7 +135,7 @@ class App extends Component {
         <ImageUploader onDelete={this.handleImageDelete.bind(this)} onChange={this.handleImageAdd.bind(this)}></ImageUploader>
         <hr></hr>
 
-        <Button variant="contained" color="primary" disabled={(this.state.original.length === 0) && (this.state.loading)} onClick={this.makeRequests.bind(this)}>Colorize</Button>
+        <Button variant="contained" color="primary" disabled={(this.state.original.length === 0) || (this.state.loading)} onClick={this.makeRequests.bind(this)}>Colorize</Button>
         {this.state.loading && <CircularProgress size={30}/>}
         <Button variant="contained" color="primary" disabled={(this.state.result.length === 0)} onClick={this.clear.bind(this)}>Clear</Button>
 
